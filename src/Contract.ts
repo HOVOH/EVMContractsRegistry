@@ -27,21 +27,20 @@ export class ContractVersions<F> {
 
   public getVersion(i: number): SimpleContract<F> {
     if (i < 0 || i >= this.versions.length) {
-      return this.contractNotFound();
+      throw new Error("Contract not found");
     }
     return this.toSimpleContract(this.versions[i]);
   }
 
-  private toSimpleContract(contract: IContractAddress): SimpleContract<F> {
+  private toSimpleContract(contract?: IContractAddress): SimpleContract<F> {
+    if (!contract){
+      throw new Error("Contract not found");
+    }
     return {
-      address: contract.address,
-      deployedAt: contract.deployedAt,
+      address: contract?.address,
+      deployedAt: contract?.deployedAt,
       factory: this.factory,
     };
-  }
-
-  private contractNotFound() {
-    return this.toSimpleContract({ address: ZERO_ADDRESS, deployedAt: 0 });
   }
 
   public atBlock(block: number): SimpleContract<F> {
@@ -49,15 +48,13 @@ export class ContractVersions<F> {
       .slice(0)
       .reverse()
       .find(contract => contract.deployedAt <= block);
-    if (found) {
-      return this.toSimpleContract(found);
-    }
-    return this.contractNotFound();
+    return this.toSimpleContract(found);
+
   }
 
   public latest(): SimpleContract<F> {
     if (this.versions.length === 0) {
-      return this.contractNotFound();
+      throw new Error("Contract not found");
     }
     return this.toSimpleContract(this.versions[this.versions.length - 1]);
   }

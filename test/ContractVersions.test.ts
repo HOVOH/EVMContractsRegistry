@@ -42,9 +42,9 @@ describe('ContractVersions', () => {
     expect(versions.getVersion(2).address).toEqual(ADDR_2);
   });
 
-  it('Should return null address if no contracts found', () => {
-    expect(versions.getVersion(-1).address).toEqual(ZERO_ADDRESS);
-    expect(versions.getVersion(10).address).toEqual(ZERO_ADDRESS);
+  it('Should return throw and error if no contracts found', () => {
+    expect( () => versions.getVersion(-1).address).toThrow();
+    expect(() => versions.getVersion(10).address).toThrow();
   });
 
   it('Should return contract at blocks', () => {
@@ -58,8 +58,8 @@ describe('ContractVersions', () => {
     expect(versions.atBlock(DEPLOYED_2 + 1).address).toEqual(ADDR_2);
   });
 
-  it('Should return null address if no contract deployed at block', () => {
-    expect(versions.atBlock(DEPLOYED_0 - 1).address).toEqual(ZERO_ADDRESS);
+  it('Should throw an error if no contract deployed at block', () => {
+    expect(() => versions.atBlock(DEPLOYED_0 - 1)).toThrow();
   });
 
   it('Should return latest contract', () => {

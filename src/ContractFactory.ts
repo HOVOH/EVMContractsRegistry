@@ -1,5 +1,5 @@
 import { Provider } from '@ethersproject/providers';
-import { Signer } from 'ethers';
+import { Signer } from "ethers";
 
 import { NetworksContractsRegistry } from './contractRegistry';
 import {NetworkID, ProvidersRegistry} from './providersRegistry';
