@@ -43,7 +43,7 @@ describe('ContractVersions', () => {
   });
 
   it('Should return throw and error if no contracts found', () => {
-    expect( () => versions.getVersion(-1).address).toThrow();
+    expect(() => versions.getVersion(-1).address).toThrow();
     expect(() => versions.getVersion(10).address).toThrow();
   });
 

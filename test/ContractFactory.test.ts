@@ -68,7 +68,7 @@ contracts.addNetwork(Network.OPERA_TEST_NET, testnetContracts);
 describe('ContractFactory', () => {
   let contractFactory: ContractFactory<INetworkTestRegistries>;
 
-  beforeEach(function() {
+  beforeEach(function () {
     contractFactory = new ContractFactory(providers, contracts);
   });
 

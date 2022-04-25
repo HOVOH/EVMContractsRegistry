@@ -27,14 +27,14 @@ export class ContractVersions<F> {
 
   public getVersion(i: number): SimpleContract<F> {
     if (i < 0 || i >= this.versions.length) {
-      throw new Error("Contract not found");
+      throw new Error('Contract not found');
     }
     return this.toSimpleContract(this.versions[i]);
   }
 
   private toSimpleContract(contract?: IContractAddress): SimpleContract<F> {
-    if (!contract){
-      throw new Error("Contract not found");
+    if (!contract) {
+      throw new Error('Contract not found');
     }
     return {
       address: contract?.address,
@@ -47,14 +47,13 @@ export class ContractVersions<F> {
     const found = this.versions
       .slice(0)
       .reverse()
-      .find(contract => contract.deployedAt <= block);
+      .find((contract) => contract.deployedAt <= block);
     return this.toSimpleContract(found);
-
   }
 
   public latest(): SimpleContract<F> {
     if (this.versions.length === 0) {
-      throw new Error("Contract not found");
+      throw new Error('Contract not found');
     }
     return this.toSimpleContract(this.versions[this.versions.length - 1]);
   }
@@ -65,6 +64,6 @@ export class ContractVersions<F> {
   }
 }
 
-export interface IContractsRegistry {
-  [contract: string]: ContractVersions<unknown>;
-}
+export type IContractsRegistry<T extends string | number | symbol> = {
+  [contract in T]: ContractVersions<unknown>;
+};

@@ -31,12 +31,7 @@
     "trailingComma": "es5"
   },
   "jest": {
-    "testEnvironment": "node",
-    "globals": {
-      "ts-jest": {
-        "tsconfig": "./tsconfig.jest.json"
-      }
-    }
+    "testEnvironment": "node"
   },
   "peerDependencies": {},
   "engines": {

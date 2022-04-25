@@ -1,26 +1,27 @@
 import { Provider } from '@ethersproject/providers';
-import { Signer } from "ethers";
+import { Signer } from 'ethers';
 
-import { NetworksContractsRegistry } from './contractRegistry';
-import {NetworkID, ProvidersRegistry} from './providersRegistry';
+import {
+  INetworksContractMap,
+  NetworksContractsRegistry,
+} from './contractRegistry';
+import { NetworkID, ProvidersRegistry } from './providersRegistry';
 import {
   ContractVersions,
   IContractsRegistry,
   SimpleContract,
 } from './Contract';
 
-export class ContractFactory<T> {
+export class ContractFactory<T extends INetworksContractMap<T>> {
   public readonly providers: ProvidersRegistry;
-  private contracts: NetworksContractsRegistry<IContractsRegistry>;
+  private contracts: NetworksContractsRegistry<T>;
 
   constructor(
     providersRegistry: ProvidersRegistry,
     contractsRegistry: NetworksContractsRegistry<T>
   ) {
     this.providers = providersRegistry;
-    this.contracts = (contractsRegistry as unknown) as NetworksContractsRegistry<
-      IContractsRegistry
-    >;
+    this.contracts = contractsRegistry as NetworksContractsRegistry<T>;
   }
 
   public forNetwork<K extends keyof T>(
@@ -32,41 +33,38 @@ export class ContractFactory<T> {
       throw Error(`Network ${network} is not available`);
     }
     const networkProvider = provider || this.providers.forNetwork(nid);
-
-    return (new NetworkContractFactory<IContractsRegistry>(
-      networkProvider,
-      (this.contracts.forNetwork(
-        nid as number | string
-      ) as unknown) as IContractsRegistry
-      // @ts-ignore
-    ) as unknown) as NetworkContractFactory<T[K]>;
+    const contracts = this.contracts.forNetwork(network);
+    if (contracts) {
+      return new NetworkContractFactory<T[K]>(
+        networkProvider,
+        contracts as T[K]
+      );
+    }
+    return new NetworkContractFactory<T[K]>(networkProvider, {} as T[K]);
   }
 }
 
 // T is name => ContractVersion<FactoryType>
-export class NetworkContractFactory<T extends IContractsRegistry> {
+export class NetworkContractFactory<T extends IContractsRegistry<keyof T>> {
   public readonly networkProvider: Provider | Signer;
-  private readonly contracts: IContractsRegistry;
+  private readonly contracts: IContractsRegistry<keyof T>;
 
-  constructor(
-    provider: Provider | Signer,
-    contractsRegistry: IContractsRegistry
-  ) {
+  constructor(provider: Provider | Signer, contractsRegistry: T) {
     this.networkProvider = provider;
     this.contracts = contractsRegistry;
   }
 
   public getContractVersions<K extends keyof T>(contractName: K) {
-    const key = contractName as string;
-    return this.contracts[key] as ContractVersions<ReturnType<T[K]['factory']>>;
+    return this.contracts[contractName] as ContractVersions<
+      ReturnType<T[K]['factory']>
+    >;
   }
 
   public getContractAtBlock<K extends keyof T>(
     contractName: K,
     atBlock: number
   ) {
-    const key = contractName as string;
-    return this.contracts[key].atBlock(atBlock) as SimpleContract<
+    return this.contracts[contractName].atBlock(atBlock) as SimpleContract<
       ReturnType<T[K]['factory']>
     >;
   }

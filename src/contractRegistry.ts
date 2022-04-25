@@ -1,31 +1,29 @@
 import { IContractsRegistry } from './Contract';
-import { NetworkID } from './providersRegistry';
 
-export interface INetworksContractMap {
-  [network: NetworkID]: IContractsRegistry;
-}
+export type INetworksContractMap<N> = {
+  [network in keyof N]: IContractsRegistry<keyof N[network]>;
+};
 
 // T is registry keyed types
-export class NetworksContractsRegistry<T> {
-  map: INetworksContractMap;
+export class NetworksContractsRegistry<T extends INetworksContractMap<T>> {
+  map: INetworksContractMap<T>;
 
   constructor() {
-    this.map = {};
+    this.map = {} as INetworksContractMap<T>;
   }
 
   public forNetwork<K extends keyof T>(network: K) {
-    const networkID = network as NetworkID;
-    if (!this.networkAvailable(networkID)) {
+    if (!this.networkAvailable(network)) {
       throw new Error(`Contracts for network ${network} unavailable`);
     }
-    return (this.map[networkID] as unknown) as T[K];
+    return this.map[network];
   }
 
   public addNetwork<K extends keyof T>(network: K, registry: T[K]) {
-    this.map[network as NetworkID] = (registry as unknown) as IContractsRegistry;
+    this.map[network] = registry;
   }
 
-  public networkAvailable(network: NetworkID): boolean {
+  public networkAvailable<K extends keyof T>(network: K): boolean {
     return Boolean(this.map[network]);
   }
 }
