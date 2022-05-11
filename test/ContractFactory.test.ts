@@ -1,46 +1,16 @@
-import { ContractFactory } from '../src';
-import { ContractVersions } from '../src';
-import { Signer } from 'ethers';
-import { Provider } from '@ethersproject/providers';
-import { providers } from '../src';
-import { NetworksContractsRegistry } from '../src';
-import { Network } from '../src';
+import {ContractFactory, ContractVersions, Network, NetworksContractsRegistry, providers} from '../src';
+import {ERC20__factory} from "../bindings/factories";
+import {ERC20} from "../bindings";
+import {ERC20Multicall} from "../bindings/ERC20";
 
-class TestContract {
-  tag = 'test_contract';
-  counter = 0;
-
-  constructor(public address: string, public provider: Signer | Provider) {}
-
-  static connect(address: string, signerOrProvider: Signer | Provider) {
-    return new TestContract(address, signerOrProvider);
-  }
-
-  async hello() {
-    this.counter += 1;
-  }
-}
-
-class SecondTestContract extends TestContract {
-  tag = 'nd_test_contract';
-  counter = 0;
-
-  static connect(address: string, signerOrProvider: Signer | Provider) {
-    return new SecondTestContract(address, signerOrProvider);
-  }
-
-  async world() {
-    this.counter += 1;
-  }
-}
 
 interface ITestRegistry {
-  token: ContractVersions<TestContract>;
-  staking: ContractVersions<SecondTestContract>;
+  WFTM: ContractVersions<ERC20, ERC20Multicall>;
+  BOO: ContractVersions<ERC20, ERC20Multicall>;
 }
 
 interface ITestRegistry2 {
-  token: ContractVersions<TestContract>;
+  WFTM: ContractVersions<ERC20, ERC20Multicall>;
 }
 
 interface INetworkTestRegistries {
@@ -50,18 +20,18 @@ interface INetworkTestRegistries {
 
 const contracts = new NetworksContractsRegistry<INetworkTestRegistries>();
 const mainnetContracts: ITestRegistry = {
-  token: new ContractVersions(TestContract.connect, [
-    { address: '0xtest', deployedAt: 1 },
-  ]),
-  staking: new ContractVersions(SecondTestContract.connect, [
-    { address: '0xdead', deployedAt: 0 },
-  ]),
+  WFTM: new ContractVersions( [
+    { address: '0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83', deployedAt: 1, abi: ERC20__factory.abi },
+  ], ERC20__factory.connect, ERC20__factory.multicall),
+  BOO: new ContractVersions( [
+    { address: '0x841FAD6EAe12c286d1Fd18d1d525DFfA75C7EFFE', deployedAt: 0, abi: ERC20__factory.abi },
+  ],ERC20__factory.connect, ERC20__factory.multicall),
 };
 contracts.addNetwork(Network.OPERA_MAIN_NET, mainnetContracts);
 const testnetContracts: ITestRegistry2 = {
-  token: new ContractVersions(TestContract.connect, [
-    { address: '0xtest', deployedAt: 1 },
-  ]),
+  WFTM: new ContractVersions( [
+    { address: '0x84c5D4A62cc00FEB0214fA1AdE22a2f860D34217', deployedAt: 1, abi: ERC20__factory.abi },
+  ], ERC20__factory.connect, ERC20__factory.multicall),
 };
 contracts.addNetwork(Network.OPERA_TEST_NET, testnetContracts);
 
@@ -79,28 +49,62 @@ describe('ContractFactory', () => {
     expect(networkContractFactory.networkProvider).not.toBeNull();
   });
 
-  it('Should return the contracts properly typed and initialised', () => {
-    const staking = contractFactory
+  it('Should return the contracts properly typed and initialised', async () => {
+    const boo = contractFactory
       .forNetwork(Network.OPERA_MAIN_NET)
-      .getLatestContractInstance('staking');
-    staking.world();
-    expect(staking.counter).toEqual(1);
+      .getLatestContractInstance('BOO');
+    expect(await boo.symbol()).toEqual("BOO");
     const token = contractFactory
       .forNetwork(Network.OPERA_MAIN_NET)
-      .getLatestContractInstance('token');
-    token.hello();
-    expect(token.counter).toEqual(1);
-    const tokenTestnet = contractFactory
+      .getLatestContractInstance('WFTM');
+    expect(await token.symbol()).toEqual("WFTM");
+    const wftmTestnet = contractFactory
       .forNetwork(Network.OPERA_TEST_NET)
-      .getLatestContractInstance('token');
-    tokenTestnet.hello();
-    expect(tokenTestnet.counter).toEqual(1);
+      .getLatestContractInstance('WFTM');
+    expect(await wftmTestnet.symbol()).toEqual("WFTM");
   });
 
   it('Should return the SimpleContract instance', () => {
     const contract = contractFactory
       .forNetwork(Network.OPERA_MAIN_NET)
-      .getLatestContract('token');
-    expect(contract.address).toEqual(mainnetContracts.token.latest().address);
+      .getLatestContract('WFTM');
+    expect(contract.address).toEqual(mainnetContracts.WFTM.latest().address);
   });
+
+  it("Should do a multicall from initialised contracts", async () => {
+    const boo = contractFactory
+        .forNetwork(Network.OPERA_MAIN_NET)
+        .getLatestContractInstance('BOO');
+    const wftm = contractFactory
+        .forNetwork(Network.OPERA_MAIN_NET)
+        .getLatestContractInstance('WFTM');
+    const [wftmSymbol, booSymbol, balance] = await providers.multicallForNetwork(Network.OPERA_MAIN_NET)
+        .all([
+            wftm.multiCall.symbol(),
+            boo.multiCall.symbol(),
+            boo.multiCall.balanceOf("0x841FAD6EAe12c286d1Fd18d1d525DFfA75C7EFFE"),
+        ])
+    expect(wftmSymbol).toEqual("WFTM");
+    expect(booSymbol).toEqual("BOO");
+  })
+
+  it("Should do a multicall from contract name", async () => {
+    const [wftmSymbol, booSymbol, balance] = await contractFactory
+        .forNetwork(Network.OPERA_MAIN_NET)
+        .multiCall((getContract) => [
+            getContract("WFTM").symbol(),
+            getContract("BOO").symbol(),
+            getContract("BOO").balanceOf("0x841FAD6EAe12c286d1Fd18d1d525DFfA75C7EFFE"),
+        ])
+    expect(wftmSymbol).toEqual("WFTM");
+    expect(booSymbol).toEqual("BOO");
+    expect(balance._isBigNumber).toEqual(true)
+    ERC20__factory.createInterface()
+  })
+
+  it.skip("Test typing promise", async () => {
+    const prom0 = new Promise<number>(() => 1);
+    const prom1 = new Promise<string>(() => "test");
+    const [res0, res1] = await Promise.all([prom0, prom1]);
+  })
 });

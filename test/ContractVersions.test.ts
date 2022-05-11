@@ -29,11 +29,11 @@ describe('ContractVersions', () => {
   let versions: ContractVersions<TestContract>;
 
   beforeEach(() => {
-    versions = new ContractVersions(TestContract.connect, [
-      { address: ADDR_0, deployedAt: DEPLOYED_0 },
-      { address: ADDR_1, deployedAt: DEPLOYED_1 },
-      { address: ADDR_2, deployedAt: DEPLOYED_2 },
-    ]);
+    versions = new ContractVersions([
+      { address: ADDR_0, deployedAt: DEPLOYED_0, abi: [""] },
+      { address: ADDR_1, deployedAt: DEPLOYED_1, abi: [""] },
+      { address: ADDR_2, deployedAt: DEPLOYED_2, abi: [""] },
+    ], TestContract.connect );
   });
 
   it('Should return the version', () => {
@@ -69,7 +69,7 @@ describe('ContractVersions', () => {
   it('Should add a version and keep the order', () => {
     const ADD_ADDR = '0x9999';
     const ADD_DEPLOYED = DEPLOYED_1 - 10;
-    versions.add({ deployedAt: ADD_DEPLOYED, address: ADD_ADDR });
+    versions.add({ deployedAt: ADD_DEPLOYED, address: ADD_ADDR, abi: [""] });
     expect(versions.getVersion(0).address).toEqual(ADDR_0);
     expect(versions.getVersion(1).address).toEqual(ADD_ADDR);
     expect(versions.getVersion(2).address).toEqual(ADDR_1);
