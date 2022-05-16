@@ -1,11 +1,8 @@
 import { Signer } from 'ethers';
 import { Provider } from '@ethersproject/providers';
-import { ZERO_ADDRESS } from './constants';
-import {Fragment, JsonFragment} from '@ethersproject/abi';
 
 export interface IContractAddress {
   address: string;
-  abi: JsonFragment[] | string[] | Fragment[],
   deployedAt: number;
 }
 
@@ -56,7 +53,6 @@ export class ContractVersions<F, T = never> {
       deployedAt: contract.deployedAt,
       factory: this.factory,
       multicallFactory: this.multicallFactory,
-      abi: contract.abi
     };
   }
 

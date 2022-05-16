@@ -21,16 +21,16 @@ interface INetworkTestRegistries {
 const contracts = new NetworksContractsRegistry<INetworkTestRegistries>();
 const mainnetContracts: ITestRegistry = {
   WFTM: new ContractVersions( [
-    { address: '0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83', deployedAt: 1, abi: ERC20__factory.abi },
+    { address: '0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83', deployedAt: 1 },
   ], ERC20__factory.connect, ERC20__factory.multicall),
   BOO: new ContractVersions( [
-    { address: '0x841FAD6EAe12c286d1Fd18d1d525DFfA75C7EFFE', deployedAt: 0, abi: ERC20__factory.abi },
+    { address: '0x841FAD6EAe12c286d1Fd18d1d525DFfA75C7EFFE', deployedAt: 0 },
   ],ERC20__factory.connect, ERC20__factory.multicall),
 };
 contracts.addNetwork(Network.OPERA_MAIN_NET, mainnetContracts);
 const testnetContracts: ITestRegistry2 = {
   WFTM: new ContractVersions( [
-    { address: '0x84c5D4A62cc00FEB0214fA1AdE22a2f860D34217', deployedAt: 1, abi: ERC20__factory.abi },
+    { address: '0x84c5D4A62cc00FEB0214fA1AdE22a2f860D34217', deployedAt: 1 },
   ], ERC20__factory.connect, ERC20__factory.multicall),
 };
 contracts.addNetwork(Network.OPERA_TEST_NET, testnetContracts);
