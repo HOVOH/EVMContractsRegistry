@@ -1,6 +1,6 @@
 {
   "name": "@hovoh/evmcontractsregistry",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "license": "MIT",
   "author": "HOVOH",
   "main": "dist/index.js",
