@@ -14,7 +14,7 @@ import {
   NetworkID,
   INetworksProviders,
   ProvidersRegistry,
-} from './providersRegistry';
+} from './ProvidersRegistry';
 import { ZERO_ADDRESS } from './constants';
 
 export {

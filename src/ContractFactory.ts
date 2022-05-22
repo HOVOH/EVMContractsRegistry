@@ -5,7 +5,7 @@ import {
   INetworksContractMap,
   NetworksContractsRegistry,
 } from './contractRegistry';
-import { NetworkID, ProvidersRegistry } from './providersRegistry';
+import { NetworkID, ProvidersRegistry } from './ProvidersRegistry';
 import {
   ContractVersions,
   IContractsRegistry,
@@ -47,8 +47,10 @@ export class ContractFactory<T extends INetworksContractMap<T>> {
 }
 
 export interface IContractFactory<T extends IContractsRegistry<keyof T>> {
-  networkProvider: Provider | Signer;
-  chainId: number;
+  readonly networkProvider: Provider | Signer;
+  readonly chainId: number;
+  readonly contracts: IContractsRegistry<keyof T>;
+
 
   multiCall<K extends keyof T, T1, T2>(calls: (get: (contractName: K) => ReturnType<T[K]['multicallFactory']>) => [ContractCall<T1>, ContractCall<T2>]): Promise<[T1, T2]>
   multiCall<K extends keyof T, T1, T2, T3>(calls: (get: (contractName: K) => ReturnType<T[K]['multicallFactory']>) => [ContractCall<T1>, ContractCall<T2>, ContractCall<T3>]): Promise<[T1, T2, T3]>
@@ -77,7 +79,7 @@ export interface IContractFactory<T extends IContractsRegistry<keyof T>> {
 // T is name => ContractVersion<FactoryType>
 export class NetworkContractFactory<T extends IContractsRegistry<keyof T>> {
   public readonly networkProvider: Provider | Signer;
-  private readonly contracts: IContractsRegistry<keyof T>;
+  public readonly contracts: IContractsRegistry<keyof T>;
   public readonly chainId: number;
 
   constructor(provider: Provider | Signer, chainId: number, contractsRegistry: T) {

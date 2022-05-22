@@ -3,6 +3,7 @@ import { Provider as MulticallProvider } from "@hovoh/ethers-multicall";
 
 export interface IProvider {
   httpRpc: string[];
+  wsRpc: string[];
 }
 
 export type NetworkID = string | number;
@@ -39,6 +40,14 @@ export class ProvidersRegistry {
 
   public getUrl(nid: NetworkID) {
     return this.networks[nid].httpRpc[0];
+  }
+
+  public wsForNetwork(nid: NetworkID) {
+    return new ethers.providers.WebSocketProvider(this.getWsUrl(nid));
+  }
+
+  public getWsUrl(nid: NetworkID) {
+    return this.networks[nid].wsRpc[0];
   }
 
   public multicallForNetwork(nid: NetworkID){
